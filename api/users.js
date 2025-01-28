@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const prisma = require('../prisma');
+const { prisma } = require('../prisma');
 
 function createToken(id) {
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -60,6 +60,6 @@ function authenticate(req, res, next) {
   next();
 }
 
-module.exports = { router, authenticate };
+module.exports = router;
 
 bcrypt.genSalt;

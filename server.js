@@ -7,7 +7,7 @@ require('dotenv').config();
 app.use(require('morgan')('dev'));
 app.use(express.json());
 
-app.use(require('./api/auth').router);
+// app.use(require('./api/auth').router);
 app.use('/users', require('./api/users'));
 
 // Error logging middleware
