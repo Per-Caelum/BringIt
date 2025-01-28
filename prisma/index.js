@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
-const { PrismaClient } = require('@prisma/client');
+const bcrypt = require("bcrypt");
+const { PrismaClient } = require("@prisma/client");
 
 // Created model for user login credentials without changing database schema
 const prisma = new PrismaClient().$extends({
@@ -17,10 +17,10 @@ const prisma = new PrismaClient().$extends({
           where: { email },
         });
         const valid = await bcrypt.compare(password, user.password);
-        if (!valid) throw Error('Invalid Password');
+        if (!valid) throw Error("Invalid Password");
         return user;
       },
     },
   },
 });
-module.exports = prisma;
+module.exports = { prisma };
