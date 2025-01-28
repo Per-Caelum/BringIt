@@ -23,4 +23,4 @@ const prisma = new PrismaClient().$extends({
     },
   },
 });
-module.exports = prisma;
+module.exports = { prisma };

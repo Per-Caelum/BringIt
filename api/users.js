@@ -28,16 +28,26 @@ router.use(async (req, res, next) => {
 router.post('/register', async (req, res, next) => {
   const { email, password, firstname, lastname } = req.body;
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
         email,
-        password: await bcrypt.hash(password, 10),
+        password: hashedPassword,
         firstname,
         lastname,
       },
     });
+
     res.status(201).json({ token: createToken(user.id) });
   } catch (e) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email }, // Query the user by email
+    });
+
+    if (existingUser) {
+      // If a user with this email already exists, return a 409 Conflict error
+      return res.status(409).json('Email already exists');
+    }
     next(e);
   }
 });
