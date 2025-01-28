@@ -30,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/Per-Caelum/BringIt/issues"
   },
-  "homepage": "https://github.com/Per-Caelum/BringIt#readme"
+  "homepage": "https://github.com/Per-Caelum/BringIt#readme",
+  "prisma": {
+    "seed": "node prisma"
+  }
 }
