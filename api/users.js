@@ -4,11 +4,21 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { prisma } = require("../prisma");
 
+/**
+ * Generates a JSON Web Token (JWT) for a user.
+ * @param {string} id - The user ID to include in the token payload.
+ * @returns {string} - The generated JWT.
+ */
 function createToken(id) {
   const JWT_SECRET = process.env.JWT_SECRET;
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: "2h" });
 }
 
+/**
+ * Middleware to check if a valid JWT is present in the request header.
+ * If a token is present, it will decode the token and attach the user to the request object.
+ * Otherwise, it will pass the request along to the next middleware without any modifications.
+ */
 router.use(async (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.slice(7);
@@ -25,6 +35,11 @@ router.use(async (req, res, next) => {
   }
 });
 
+/**
+ * Handles user registration.
+ * Hashes the user's password and stores their information in the database.
+ * Returns a token on successful registration.
+ */
 router.post("/register", async (req, res, next) => {
   const { email, password, firstname, lastname } = req.body;
   try {
@@ -41,17 +56,20 @@ router.post("/register", async (req, res, next) => {
     res.status(201).json({ token: createToken(user.id) });
   } catch (e) {
     const existingUser = await prisma.user.findUnique({
-      where: { email }, // Query the user by email
+      where: { email },
     });
 
     if (existingUser) {
-      // If a user with this email already exists, return a 409 Conflict error
       return res.status(409).json("Email already exists");
     }
     next(e);
   }
 });
 
+/**
+ * Handles user login.
+ * Verifies the user's credentials and returns a token if successful.
+ */
 router.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
   try {
@@ -63,12 +81,21 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
+/**
+ * Middleware to ensure the user is authenticated before accessing a route.
+ * If no user is attached to the request, it returns a 401 Unauthorized error.
+ */
 function authenticate(req, res, next) {
   if (!req.user) {
     return next({ status: 401, message: "Please log in first." });
   }
   next();
 }
+
+/**
+ * Retrieves information about the authenticated user.
+ * This route requires authentication via the `authenticate` middleware.
+ */
 router.get("/aboutMe", authenticate, async (req, res, next) => {
   try {
     const { id, firstname, lastname, email } = req.user;
@@ -77,6 +104,5 @@ router.get("/aboutMe", authenticate, async (req, res, next) => {
     next(e);
   }
 });
-module.exports = router;
 
-bcrypt.genSalt;
+module.exports = router;
