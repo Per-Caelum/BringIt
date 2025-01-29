@@ -1,0 +1,26 @@
+@port=3000
+@host=http://localhost:{{port}}
+
+### GET /users
+GET {{host}}/users/aboutMe
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNkYjcwMmEyLWUyYjctNDhlNy04ZDYzLWQwNTIyOWE2YjU1YyIsImlhdCI6MTczODE3MzgzMCwiZXhwIjoxNzM4MTgxMDMwfQ.-_3ruXqCX4L7-GQyVlVtGGYUAXV31Zp6-HD-QUHPpzk
+
+### Post register   
+POST {{host}}/users/register
+Content-Type: application/json
+
+{
+    "email": "Jason1@g.com",
+    "password": "anything",
+    "firstname": "Jason",
+    "lastname": "Bourne"
+}
+
+### Post login
+POST {{host}}/users/login
+Content-Type: application/json
+
+{
+    "email": "Jason1@g.com",
+    "password": "anything"
+}

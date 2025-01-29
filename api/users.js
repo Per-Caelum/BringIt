@@ -1,8 +1,8 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const { prisma } = require("../prisma");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const { prisma } = require('../prisma');
 
 /**
  * Generates a JSON Web Token (JWT) for a user.
@@ -11,7 +11,7 @@ const { prisma } = require("../prisma");
  */
 function createToken(id) {
   const JWT_SECRET = process.env.JWT_SECRET;
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: "2h" });
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '2h' });
 }
 
 /**
@@ -40,7 +40,7 @@ router.use(async (req, res, next) => {
  * Hashes the user's password and stores their information in the database.
  * Returns a token on successful registration.
  */
-router.post("/register", async (req, res, next) => {
+router.post('/register', async (req, res, next) => {
   const { email, password, firstname, lastname } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -60,7 +60,7 @@ router.post("/register", async (req, res, next) => {
     });
 
     if (existingUser) {
-      return res.status(409).json("Email already exists");
+      return res.status(409).json('Email already exists');
     }
     next(e);
   }
@@ -70,7 +70,7 @@ router.post("/register", async (req, res, next) => {
  * Handles user login.
  * Verifies the user's credentials and returns a token if successful.
  */
-router.post("/login", async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const user = await prisma.user.login(email, password);
@@ -87,7 +87,7 @@ router.post("/login", async (req, res, next) => {
  */
 function authenticate(req, res, next) {
   if (!req.user) {
-    return next({ status: 401, message: "Please log in first." });
+    return next({ status: 401, message: 'Please log in first.' });
   }
   next();
 }
@@ -96,7 +96,7 @@ function authenticate(req, res, next) {
  * Retrieves information about the authenticated user.
  * This route requires authentication via the `authenticate` middleware.
  */
-router.get("/aboutMe", authenticate, async (req, res, next) => {
+router.get('/aboutMe', authenticate, async (req, res, next) => {
   try {
     const { id, firstname, lastname, email } = req.user;
     res.json({ id, firstname, lastname, email });
@@ -106,7 +106,7 @@ router.get("/aboutMe", authenticate, async (req, res, next) => {
 });
 
 //gets all users
-router.get("/", authenticate, async (req, res, next) => {
+router.get('/', authenticate, async (req, res, next) => {
   try {
     const users = await prisma.user.findMany();
     res.json(users);
@@ -115,10 +115,35 @@ router.get("/", authenticate, async (req, res, next) => {
   }
 });
 //gets user by id
-router.get("/:id", authenticate, async (req, res, next) => {
+router.get('/:id', authenticate, async (req, res, next) => {
   const { id } = req.params;
   try {
     const user = await prisma.user.findUniqueOrThrow({ where: { id } });
+    res.json(user);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete('/:id', authenticate, async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.delete({ where: { id } });
+    res.json(user);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.put('/:id', authenticate, async (req, res, next) => {
+  const { id } = req.params;
+  const { email, password, firstname, lastname } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.update({
+      where: { id },
+      data: { email, password: hashedPassword, firstname, lastname },
+    });
     res.json(user);
   } catch (e) {
     next(e);
