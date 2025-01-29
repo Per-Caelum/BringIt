@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { prisma } = require('../prisma');
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const { prisma } = require("../prisma");
 
 function createToken(id) {
   const JWT_SECRET = process.env.JWT_SECRET;
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '2h' });
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: "2h" });
 }
 
 router.use(async (req, res, next) => {
@@ -16,7 +16,7 @@ router.use(async (req, res, next) => {
     return next();
   }
   try {
-    const { id } = jwt.verify(token, JWT_SECRET);
+    const { id } = jwt.verify(token, process.env.JWT_SECRET);
     const user = await prisma.user.findUniqueOrThrow({ where: { id } });
     req.user = user;
     next();
@@ -25,7 +25,7 @@ router.use(async (req, res, next) => {
   }
 });
 
-router.post('/register', async (req, res, next) => {
+router.post("/register", async (req, res, next) => {
   const { email, password, firstname, lastname } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -46,13 +46,13 @@ router.post('/register', async (req, res, next) => {
 
     if (existingUser) {
       // If a user with this email already exists, return a 409 Conflict error
-      return res.status(409).json('Email already exists');
+      return res.status(409).json("Email already exists");
     }
     next(e);
   }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const user = await prisma.user.login(email, password);
@@ -65,11 +65,18 @@ router.post('/login', async (req, res, next) => {
 
 function authenticate(req, res, next) {
   if (!req.user) {
-    return next({ status: 401, message: 'Please log in first.' });
+    return next({ status: 401, message: "Please log in first." });
   }
   next();
 }
-
+router.get("/aboutMe", authenticate, async (req, res, next) => {
+  try {
+    const { id, firstname, lastname, email } = req.user;
+    res.json({ id, firstname, lastname, email });
+  } catch (e) {
+    next(e);
+  }
+});
 module.exports = router;
 
 bcrypt.genSalt;
